@@ -50,4 +50,4 @@ class LivenessDetector:
         # Simple blink detection using eye aspect ratio (EAR)
         eye_aspect_ratio = (abs(left_eye[1] - right_eye[1]) / 
                            abs(left_eye[0] - right_eye[0]))
-        return eye_aspect_ratio < 0.2  # Threshold for detecting a blink""""
+        return eye_aspect_ratio < 0.2  # Threshold for detecting a blink"""
