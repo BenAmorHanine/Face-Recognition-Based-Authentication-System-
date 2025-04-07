@@ -1,8 +1,9 @@
 """Tests critical components using pytest.
 Uses an in-memory database to avoid polluting the real database."""
 import pytest
-from app.authentication.enroll import Enrollment
-from app.authentication.verify import Verifier
+from app.authentification.enroll import Enrollment
+from app.authentification.verify import Verifier
+from app.database.db_handler import FaceDatabase
 
 @pytest.fixture
 def test_db():

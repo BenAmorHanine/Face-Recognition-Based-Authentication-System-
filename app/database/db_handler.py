@@ -25,7 +25,7 @@ class FaceDatabase:
         """Save a user's face embedding to the database."""
         self.cursor.execute(
             "INSERT INTO users (name, embedding) VALUES (?, ?)",
-            (name, np.array(embedding).tobytes())
+            (name, np.array(embedding).tobytes()))
         self.conn.commit()
 
     def get_all_users(self) -> list:
@@ -44,13 +44,13 @@ class FaceDatabase:
         self._create_table()
 
     def _create_table(self):
-        self.cursor.execute("""
+        self.cursor.execute(
             CREATE TABLE IF NOT EXISTS users (
                 id INTEGER PRIMARY KEY,
                 name TEXT UNIQUE,
                 embedding BLOB
             )
-        """)
+        )
         self.conn.commit()
 
     def save_user(self, name, embedding):

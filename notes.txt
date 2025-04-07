@@ -11,3 +11,40 @@ Scenario 1: Use only one detector for both enrollment and verification (e.g., MT
 Scenario 2: Use different detectors (e.g., MTCNN for enrollment, Haar for verification).
 
 We’ll implement Scenario 2 for optimal balance between accuracy and speed.
+for the authentif we needed before it to set up: the face deection then the generation of the embedding, leter we use them for the enrollment and verif( you can read the doc of the 2 functions in order to understand)
+
+**
+dataset/
+Raw Images: Store original user enrollment images (e.g., dataset/raw/users/alice/1.jpg).
+
+Processed Data: Save cropped/aligned faces (e.g., dataset/processed/users/alice.jpg).
+
+models/
+Pre-trained Models: Host downloaded weights (e.g., models/pretrained/facenet_weights.h5).
+Custom Models: Save models you train (e.g., models/custom/liveness_model.pth
+BUTT:
+1. Why You Don’t Need models/ for Pre-Trained Models (Yet)
+If you're only using existing libraries like:
+
+MTCNN (via mtcnn package)
+
+FaceNet (via deepface package)
+
+Haar Cascades (via OpenCV’s built-in XML files)
+
+...these models are automatically handled by their respective libraries. For example:
+
+mtcnn downloads its weights internally.
+
+deepface automatically fetches FaceNet/ArcFace weights.
+
+OpenCV ships with Haar Cascade XML files.
+
+You don’t need to manually manage these files in a models/ folder.
+
+2. When You Would Need the models/ Folder
+Scenario	Example	Folder Usage
+Custom Models	Training a liveness detector or fine-tuning FaceNet	models/custom/liveness_model.pth
+Version Control	Ensuring reproducibility by pinning specific model versions	models/pretrained/facenet_v1.h5
+Edge Deployment	Optimized models for mobile/IoT (e.g., TFLite, ONNX)	models/edge/facenet_quantized.tflite
+Non-Standard Models	Using a custom face detector (e.g., YOLO)	models/pretrained/yolov5_face.pt

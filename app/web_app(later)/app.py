@@ -1,6 +1,7 @@
 from flask import Flask, request, render_template, jsonify
-from ..authentication.enroll import Enrollment
-from ..authentication.verify import Verifier
+from ..authentification.enroll import Enrollment
+from ..authentification.verify import Verifier
+from ..feature_extraction.embeddings import EmbeddingGenerator
 
 app = Flask(__name__)
 enroller = Enrollment()
