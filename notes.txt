@@ -1,0 +1,6 @@
+face detection: choice between MTCNN and Haar Cascade wich is real time. In our case, the user "logs" his face in order to get aithenticated so we dont really need real time authentication.
+the usual is: using MTCNN for enrollment or registration as it is more occure so more secure, and use Real time verif like Haar Cacade or BlazeFce or YuNet as it is more ligntweight and especially faster.
+the idea is to combine so we merge user experience (fast) and acuracy. and in this case , We'll split the system into:
+
+✅ 1. Enrollment Flow (High accuracy with MTCNN) for high-quality face alignment.
+🔄 2. Authentication Flow (Fast real-time with Haar Cascade) + MTCNN for alignment only.

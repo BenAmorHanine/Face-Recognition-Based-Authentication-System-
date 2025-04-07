@@ -1,0 +1,6 @@
+mtcnn==0.1.1
+opencv-python==4.5.5.64
+deepface==0.0.79
+flask==2.0.3
+scikit-learn==1.0.2
+numpy==1.22.4
