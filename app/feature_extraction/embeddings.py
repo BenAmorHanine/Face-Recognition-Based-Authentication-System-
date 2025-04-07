@@ -1,5 +1,5 @@
 #Converts faces to embeddings (numerical fingerprints) using pre-trained models.
-# from deepface import DeepFace
+from deepface import DeepFace
 
 class EmbeddingGenerator:
     def __init__(self, model_name="Facenet"):

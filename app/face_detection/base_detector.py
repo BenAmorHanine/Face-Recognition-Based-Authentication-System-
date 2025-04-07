@@ -1,4 +1,35 @@
-from mtcnn import MTCNN
+from abc import ABC, abstractmethod
+
+class BaseFaceDetector(ABC):
+    """Abstract base class for face detectors."""
+    
+    @abstractmethod
+    def detect_faces(self, image_path: str) -> list:
+        """Detect faces in an image.
+        
+        Args:
+            image_path: Path to the input image.
+        
+        Returns:
+            List of detected faces (format varies by detector).
+        """
+        pass
+
+    @abstractmethod
+    def crop_face(self, image_path: str, output_path: str) -> str:
+        """Crop and save the first detected face.
+        
+        Args:
+            image_path: Path to the input image.
+            output_path: Path to save the cropped face.
+        
+        Returns:
+            Path to the cropped face image.
+        """
+        pass
+    
+    
+"""from mtcnn import MTCNN
 import cv2 #<=> the Haar det
 
 class FaceDetector:
@@ -26,3 +57,4 @@ class FaceDetector:
         cropped_face = image[y:y+h, x:x+w]
         cv2.imwrite(output_path, cv2.cvtColor(cropped_face, cv2.COLOR_RGB2BGR))
         return output_path  # Path to the saved cropped face
+"""
