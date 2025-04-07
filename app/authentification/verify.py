@@ -1,19 +1,19 @@
-from app.face_detection import HaarDetector  # Use Haar for real-time
+from app.face_detection.detector_factory import DetectorFactory
 from app.feature_extraction.embeddings import EmbeddingGenerator
 from app.database.db_handler import FaceDatabase
 from sklearn.metrics.pairwise import cosine_similarity
+from app.config import VERIFICATION_DETECTOR, SIMILARITY_THRESHOLD
 
 class Verifier:
-    """Handles user verification with fast Haar detection."""
+    """Handles verification with the configured detector (Haar by default)."""
     
-    def __init__(self, threshold=0.7):
-        self.detector = HaarDetector()  # Fixed to Haar
+    def __init__(self):
+        self.detector = DetectorFactory.create_detector(VERIFICATION_DETECTOR)
         self.embedder = EmbeddingGenerator()
         self.db = FaceDatabase()
-        self.threshold = threshold
 
     def verify_user(self, image_path: str) -> str:
-        """Verify a user by comparing embeddings."""
+        """Compare face embedding with database entries."""
         try:
             cropped_path = self.detector.crop_face(image_path)
             embedding = self.embedder.generate_embedding(cropped_path)
@@ -22,7 +22,7 @@ class Verifier:
             
             for name, stored_embedding in self.db.get_all_users():
                 similarity = cosine_similarity([embedding], [stored_embedding])[0][0]
-                if similarity > self.threshold:
+                if similarity > SIMILARITY_THRESHOLD:
                     return name
             return None
         except Exception as e:

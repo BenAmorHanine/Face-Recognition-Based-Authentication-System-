@@ -1,17 +1,18 @@
-from app.face_detection import MTCNNDetector  # Use MTCNN for enrollment
+from app.face_detection.detector_factory import DetectorFactory
 from app.feature_extraction.embeddings import EmbeddingGenerator
 from app.database.db_handler import FaceDatabase
+from app.config import ENROLLMENT_DETECTOR
 
 class Enrollment:
-    """Handles user enrollment with high-accuracy MTCNN detection."""
+    """Handles user enrollment with the configured detector (MTCNN by default)."""
     
     def __init__(self):
-        self.detector = MTCNNDetector()  # Fixed to MTCNN
+        self.detector = DetectorFactory.create_detector(ENROLLMENT_DETECTOR)
         self.embedder = EmbeddingGenerator()
         self.db = FaceDatabase()
 
     def enroll_user(self, name: str, image_path: str) -> bool:
-        """Enroll a user by detecting, cropping, and storing their face."""
+        """Detect face, generate embedding, and save to database."""
         try:
             cropped_path = self.detector.crop_face(image_path)
             embedding = self.embedder.generate_embedding(cropped_path)

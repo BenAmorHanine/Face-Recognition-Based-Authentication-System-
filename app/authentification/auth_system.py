@@ -1,49 +1,20 @@
 #enroll and verify logic
 #after separating
-from .face_detection import MTCNNDetector, HaarDetector
-from .feature_extraction.embeddings import EmbeddingGenerator
-from .database.db_handler import FaceDatabase
-from .config import DETECTOR_TYPE, SIMILARITY_THRESHOLD
+from .enroll import Enrollment
+from .verify import Verifier
 
 class AuthSystem:
-    """Orchestrates enrollment and verification workflows."""
+    """Unified interface for enrollment and verification workflows."""
     
     def __init__(self):
-        # Initialize detector based on config
-        if DETECTOR_TYPE == "mtcnn":
-            self.detector = MTCNNDetector()
-        else:
-            self.detector = HaarDetector()
-        
-        self.embedder = EmbeddingGenerator()
-        self.db = FaceDatabase()
+        self.enroller = Enrollment()  # Uses MTCNN by config
+        self.verifier = Verifier()    # Uses Haar by config
 
-    def enroll_user(self, name: str, image_path: str) -> bool:
-        """Enroll a new user with face detection and embedding storage."""
-        try:
-            cropped_path = self.detector.crop_face(image_path)
-            embedding = self.embedder.generate_embedding(cropped_path)
-            if embedding is not None:
-                self.db.save_user(name, embedding)
-                return True
-            return False
-        except Exception as e:
-            print(f"Enrollment failed: {e}")
-            return False
+    def enroll(self, name: str, image_path: str) -> bool:
+        return self.enroller.enroll_user(name, image_path)
 
-    def verify_user(self, image_path: str) -> str:
-        """Verify a user against stored embeddings."""
-        cropped_path = self.detector.crop_face(image_path)
-        embedding = self.embedder.generate_embedding(cropped_path)
-        if embedding is None:
-            return None
-        
-        # Compare with all stored embeddings
-        for name, stored_embedding in self.db.get_all_users():
-            similarity = cosine_similarity([embedding], [stored_embedding])[0][0]
-            if similarity > SIMILARITY_THRESHOLD:
-                return name
-        return None
+    def verify(self, image_path: str) -> str:
+        return self.verifier.verify_user(image_path)
     
 
     """
