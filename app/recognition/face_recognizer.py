@@ -1,4 +1,5 @@
 # Embedding comparison, threshold
+#not used for now, you better use it :
 #if you want to use this class, you can, , and then update the verify.py to use it .
 #its better to use it , bc its good factorisation and if we later wanted to add multiple matching strategies (e.g., L2 distance).
 #by chat ( o for chat, el embeddings/facenet will be loaded a pretrained model)

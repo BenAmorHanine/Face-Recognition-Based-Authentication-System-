@@ -1,0 +1,1 @@
+This folder is not used currently because our models are pretrained and extracted from ready libraries from python keras 
