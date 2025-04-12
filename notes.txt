@@ -118,3 +118,20 @@ raw/test/known_faces/	      Helps test recognition on real enrolled users	      
 raw/test/unknown_faces/        Useful for false positive testing (e.g. strangers)	   Ensures system robustness
 processed/users/	           Cropped/aligned faces for actual model input	           Improves embedding quality and speed
 processed/embeddings/	       Saves per-user embeddings (.npy or .pkl)	                Fast lookup & avoids reprocessing
+
+
+
+Here's the refined comparison table for your web-based face recognition system, with clearer distinctions and web-specific considerations:
+
+Database (db_handler.py) vs. Folder (dataset/) for Web Systems
+
+
+Aspect	            Database (SQLite/PostgreSQL)	                     Filesystem (dataset/)	                                 Recommendation
+User Data	        ✅ All user metadata (username, email, embeddings)	❌ Never	                                              Database only
+Raw Images	        ❌ Never store raw images	                         ✅ Temporary storage (auto-delete after processing)	  Folder (short-term)
+Face Embeddings     ✅ Primary storage (fast search)	                     ❌ Redundant	                                      Database only
+Processed Faces	    ❌ Not needed	                                     ✅ Debugging only (crop errors)	                      Folder (temporary)
+Scalability	        ✅ Optimized for web traffic (indexes, pooling)	     ❌ Slows with many files	                          Database for all user data
+Security	        ✅ Encryption + access control	                     ❌ Manual permission setup	                          Database for sensitive data
+Compliance	        ✅ Audit logs + GDPR deletion	                     ❌ Hard to track	                                  Database for legal requirements
+Backups	            ✅ Single-file backups (.db dump)	                 ❌ Fragmented files                                   Database preferred

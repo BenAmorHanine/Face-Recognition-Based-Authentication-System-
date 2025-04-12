@@ -1,94 +1,86 @@
-# Import necessary modules from project components
+import os
+import shutil
+import time
+import numpy as np
+from datetime import datetime
+from typing import Optional
 from app.face_detection.detector_factory import DetectorFactory
 from app.feature_extraction.embeddings import EmbeddingGenerator
 from app.database.db_handler import FaceDatabase
 from app.config import ENROLLMENT_DETECTOR
 
 class Enrollment:
-    """Handles the user enrollment process for facial recognition authentication.
+    """Handles user enrollment with face detection, embedding generation, and database storage.
     
-    Uses a configurable face detector (default: MTCNN) for high-accuracy enrollment,
-    generates facial embeddings using a deep learning model, and stores them in a database.
+    Features:
+    - Configurable face detector (MTCNN/Haar)
+    - Automatic raw image archiving
+    - Cropped face storage for debugging
+    - Atomic database operations
     """
-    
+
     def __init__(self):
-        """Initialize enrollment components.
-        
-        - Detector: Chosen via factory based on ENROLLMENT_DETECTOR config
-        - Embedder: Converts face images to numerical vectors
-        - Database: Stores user embeddings for later verification
-        """
-        # Initialize face detector based on configuration (MTCNN/haar)
+        """Initialize enrollment components with dependency injection."""
         self.detector = DetectorFactory.create_detector(ENROLLMENT_DETECTOR)
-        
-        # Initialize embedding generator (uses FaceNet/ArcFace under the hood)
         self.embedder = EmbeddingGenerator()
-        
-        # Initialize database connection for storing embeddings
         self.db = FaceDatabase()
 
-    def enroll_user(self, name: str, image_path: str) -> bool:
-        """Main enrollment workflow. Returns True if enrollment succeeds.
-        
-        Process Flow:
-        1. Detect and crop face from input image
-        2. Generate facial embedding from cropped face
-        3. Store embedding in database with username
-        4. Handle errors gracefully with status returns
+    def enroll_user(self, username: str, image_path: str) -> bool:
+        """Complete enrollment workflow with error handling.
         
         Args:
-            name: Unique identifier for the user
-            image_path: File path to the enrollment image
+            username: Unique user identifier
+            image_path: Path to the enrollment image
             
         Returns:
-            bool: Success status of enrollment operation
+            bool: True if enrollment succeeded, False otherwise
         """
         try:
-            # Step 1: Detect and crop face using configured detector
-            # Outputs path to temporary cropped face image
-            cropped_path = self.detector.crop_face(image_path)
-            
-            # Step 2: Generate 128/512-dimensional embedding from face
-            # Returns None if no face detected
-            embedding = self.embedder.generate_embedding(cropped_path)
-            
-            if embedding is not None:
-                # Step 3: Store in database as BLOB with username
-                self.db.save_user(name, embedding)
-                return True
-                
-            # No face detected case
-            return False
-            
+            # 1. Archive raw image with timestamp
+            raw_user_dir = f"dataset/raw/users/{username}"
+            os.makedirs(raw_user_dir, exist_ok=True)
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            raw_save_path = f"{raw_user_dir}/{timestamp}.jpg"
+            shutil.copy(image_path, raw_save_path)
+
+            # 2. Detect and crop face
+            processed_path = f"dataset/processed/users/{username}.jpg"
+            if not self.detector.crop_face(image_path, output_path=processed_path):
+                raise ValueError("Face detection failed")
+
+            # 3. Generate embedding
+            embedding = self.embedder.generate_embedding(processed_path)
+            if embedding is None:
+                raise ValueError("Embedding generation failed")
+
+            # 4. Store in database
+            if not self.db.save_user(username, embedding):
+                raise ValueError(f"Username {username} already exists")
+
+            return True
+
         except Exception as e:
-            # Handle file I/O, detector, or database errors
-            print(f"Enrollment failed: {e}")
-            return False
-    
-"""from ..face_detection.base_detector import FaceDetector
-from ..feature_extraction.embeddings import EmbeddingGenerator
-from ..database.db_handler import FaceDatabase
-
-class Enrollment:
-    def __init__(self):
-        # Initialize dependencies
-        self.detector = FaceDetector()
-        self.embedder = EmbeddingGenerator()
-        self.db = FaceDatabase()
-
-    def enroll_user(self, name, image_path):
-        try:
-            # Step 1: Detect and crop the face
-            cropped_path = self.detector.crop_face(image_path)
-            # Step 2: Generate embedding from the cropped face
-            embedding = self.embedder.generate_embedding(cropped_path)
-            if embedding is not None:
-                # Step 3: Save to database
-                self.db.save_user(name, embedding)
-                return True
-            return False  # No face detected
-        except Exception as e:
-            print(f"Enrollment failed: {e}")
+            print(f"Enrollment Error: {str(e)}")
+            # Cleanup failed enrollment artifacts
+            if 'raw_save_path' in locals() and os.path.exists(raw_save_path):
+                os.remove(raw_save_path)
+            if 'processed_path' in locals() and os.path.exists(processed_path):
+                os.remove(processed_path)
             return False
 
-"""
+    def batch_enroll(self, user_data: dict) -> dict:
+        """Enroll multiple users with progress tracking.
+        
+        Args:
+            user_data: {username: image_path} dictionary
+            
+        Returns:
+            dict: {"success": [usernames], "failed": {username: error}}
+        """
+        results = {"success": [], "failed": {}}
+        for username, image_path in user_data.items():
+            if self.enroll_user(username, image_path):
+                results["success"].append(username)
+            else:
+                results["failed"][username] = "Enrollment failed"
+        return results
