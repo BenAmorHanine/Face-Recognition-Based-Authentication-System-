@@ -5,6 +5,10 @@ from app.database.db_handler import FaceDatabase
 from sklearn.metrics.pairwise import cosine_similarity  # For similarity calculation
 from app.config import VERIFICATION_DETECTOR, SIMILARITY_THRESHOLD  # Config settings
 from app.liveness_detection.liveness import LivenessDetector
+from typing import Optional, Tuple
+import tempfile
+import cv2
+import numpy as np
 
 
 class Verifier:
@@ -31,7 +35,7 @@ class Verifier:
 
         self.liveness_checker = LivenessDetector()
 
-    def verify_user(self, image_path: str) -> str:
+    def verify_user(self, image_path: str) -> Optional[Tuple[str, float]]:
         """Verify a user by comparing their face embedding to stored data.
         
         Args:
@@ -43,10 +47,16 @@ class Verifier:
         try:
             # Step 1: Check liveness
             if not self.liveness_checker.is_real(image_path):
-                return "SPOOF_ATTEMPT"
+                return ("SPOOF_ATTEMPT", 0.0)
             try:
+                #if there are no faces in the image, we cut, we can put it in try catch for better optimization 
+                faces = self.detector.detect_faces(image_path)
+                if not faces:
+                    return None 
                 # Step 1: Detect and crop the face from the input image
-                cropped_path = self.detector.crop_face(image_path)
+                cropped_path = self.detector.crop_face(image_path) #the faces 
+                if not cropped_path:
+                    return None
                 
                 # Step 2: Generate embedding from the cropped face
                 embedding = self.embedder.generate_embedding(cropped_path)
@@ -75,6 +85,20 @@ class Verifier:
         except Exception as e: #EXCEPTION OF LIVENESS 
             print(f"Verification failed: {e}")
             return None
+
+    def verify_from_memory(self, image_array: np.ndarray) -> Optional[Tuple[str, float]]:
+        """
+        Alternative method that works with in-memory image arrays
+        """
+        try:
+            # Save array to temp file and use main verify method
+            with tempfile.NamedTemporaryFile(suffix='.jpg', delete=True) as tmp:
+                cv2.imwrite(tmp.name, image_array)
+                return self.verify_user(tmp.name)
+        except Exception as e:
+            print(f"Memory verification error: {e}")
+            return None
+        
 
 """from ..recognition.face_recognizer import FaceRecognizer
 
