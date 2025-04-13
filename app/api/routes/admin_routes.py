@@ -17,6 +17,29 @@ async def deactivate_user(username: str):
     except Exception as e:
         raise HTTPException(400, detail=str(e))
 
+@router.post("/users/{username}/reactivate")
+async def reactivate_user(username: str):
+    try:
+        success = auth.reactivate_user(username)
+        return {"status": "success" if success else "user_not_found"}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    
+@router.get("/users")
+async def list_users():
+    try:
+        return {"users": auth.list_users()}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@router.get("/users/{username}/status")
+async def user_status(username: str):
+    try:
+        return auth.get_user_status(username)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
 @router.get("/rate-limit")
 async def get_rate_limit_status():
     """Exposes get_remaining_attempts()"""

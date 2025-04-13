@@ -1,7 +1,7 @@
 #enroll and verify logic
 #after separating
 from datetime import datetime
-from typing import Dict, Optional, Tuple
+from typing import Dict, Optional, Tuple, List
 import numpy as np
 from requests.exceptions import HTTPError
 from .enroll import Enrollment
@@ -47,6 +47,28 @@ class AuthSystem:
     def get_remaining_attempts(self) -> int:
         """Show user their remaining attempts"""
         return max(0, self.MAX_ATTEMPTS - self.attempts)
+    
+    def get_session_info(self) -> Dict[str, str]:
+        return {
+            "session_start": str(self.session_start),
+            "session_duration": str(datetime.now() - self.session_start)
+        }
+    
+    def list_users(self) -> List[str]:
+        """Return list of all enrolled users."""
+        return self.verifier.db.list_users()
+
+    def get_user_status(self, username: str) -> Dict[str, bool]:
+        """Return whether a user exists and is active."""
+        user = self.verifier.db.get_user(username)
+        if user:
+            return {"username": username, "active": user.active}
+        return {"username": username, "exists": False}
+
+    def reactivate_user(self, username: str) -> bool:
+        """Reactivate a previously deactivated user."""
+        return self.verifier.db.reactivate_user(username)
+
     
 
     

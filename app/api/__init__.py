@@ -2,7 +2,7 @@
 from fastapi import APIRouter, Depends
 from routes.enroll import router as enroll_router
 from routes.verify import router as verify_router
-from routes.admin import router as admin_router
+from app.api.routes.admin_routes import router as admin_router
 from app.authentification.auth_system import AuthSystem
 # Main API router
 api_router = APIRouter()
