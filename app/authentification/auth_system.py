@@ -1,7 +1,9 @@
 #enroll and verify logic
 #after separating
 from datetime import datetime
+import tempfile
 from typing import Dict, Optional, Tuple, List
+import cv2
 import numpy as np
 from requests.exceptions import HTTPError
 from .enroll import Enrollment
@@ -34,12 +36,33 @@ class AuthSystem:
         return self.enroller.batch_enroll(user_data)
     
     def verify_from_memory(self, image_array: np.ndarray) -> Optional[Tuple[str, float]]:
-        """Memory-based verification endpoint"""
-        if self.attempts >= self.MAX_ATTEMPTS:
-            raise HTTPError("429 Too Many Requests")
-        self.attempts += 1
-        return self.verifier.verify_from_memory(image_array)
-    
+        """Verify a user's identity from an image array (in-memory)"""
+        try:
+            # Enforce attempt limits
+            if self.attempts >= self.MAX_ATTEMPTS:
+                raise HTTPError("429 Too Many Requests")
+            self.attempts += 1
+
+            # Save image array to a temp file
+            with tempfile.NamedTemporaryFile(suffix='.jpg') as tmp:
+                # Convert RGB array to BGR and write to file
+                if image_array.shape[-1] == 3:
+                    image_bgr = cv2.cvtColor(image_array, cv2.COLOR_RGB2BGR)
+                else:
+                    image_bgr = image_array  # If already BGR or grayscale
+
+                cv2.imwrite(tmp.name, image_bgr)
+
+                # Use existing verify_user(file_path) logic
+                return self.verifier.verify_user(tmp.name)
+
+        except HTTPError:
+            raise  # Re-raise to be handled by calling route
+        except Exception as e:
+            print(f"[ERROR] Memory verification failed: {e}")
+            return None
+
+
     def reset_attempts(self):
         """Reset rate limiting counter"""
         self.attempts = 0
@@ -70,29 +93,3 @@ class AuthSystem:
         return self.verifier.db.reactivate_user(username)
 
     
-
-    
-    """
-from .enroll import Enrollment
-from .verify import Verifier
-from ..face_detection.base_detector import FaceDetector
-from ..feature_extraction.embeddings import EmbeddingGenerator
-
-class AuthSystem:
-    def __init__(self):
-        self.enroller = Enrollment()
-        self.verifier = Verifier()
-        self.detector = FaceDetector()
-        self.embedder = EmbeddingGenerator()
-
-    def enroll_user(self, name, image_path):
-        return self.enroller.enroll_user(name, image_path)
-
-    def verify_user(self, image_path):
-        # Detect face and generate embedding
-        cropped_path = self.detector.crop_face(image_path)
-        embedding = self.embedder.generate_embedding(cropped_path)
-        if embedding is None:
-            return None
-        return self.verifier.verify_user(embedding)
-        """
