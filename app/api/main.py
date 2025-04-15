@@ -1,8 +1,9 @@
 from fastapi import FastAPI
-from api.routes import admin_routes, enroll_routes, verify_routes  # adjust import paths as needed
-
+from api.routes.enroll_routes import router as enroll_router
+from api.routes.verify_routes import router as verify_router 
+from api.routes.admin_routes import router as admin_router
 app = FastAPI()
 
-app.include_router(admin_routes.router, prefix="/admin", tags=["Admin"])
-app.include_router(enroll_routes.router, prefix="/enroll", tags=["Enrollment"])
-app.include_router(verify_routes.router, prefix="/verify", tags=["Verification"])
+app.include_router(admin_router, prefix="/admin", tags=["Admin"])
+app.include_router(enroll_router, prefix="/enroll", tags=["Enrollment"])
+app.include_router(verify_router, prefix="/verify", tags=["Verification"])
