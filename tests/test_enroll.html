@@ -1,0 +1,11 @@
+<!DOCTYPE html>
+<html>
+<body>
+<h2>Face Enrollment Test</h2>
+<form action="http://localhost:8000/api/v1/enroll" method="post" enctype="multipart/form-data">
+  Username: <input type="text" name="username" value="test_user"><br>
+  Face Image: <input type="file" name="image" accept="image/*"><br>
+  <input type="submit" value="Enroll">
+</form>
+</body>
+</html>

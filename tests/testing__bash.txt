@@ -3,6 +3,9 @@ curl -v -X POST http://localhost:8000/enroll \
   -F "username=ahouda" \
   -F "image=@dataset/raw/test/ahd3.jpg"
 
+https://upgraded-memory-jjr5w6wrq44q359px-8000.app.github.dev/
+
+https://upgraded-memory-jjr5w6wrq44q359px-8000.app.github.dev/docs
 
 
 Restart your FastAPI server:
@@ -11,8 +14,18 @@ uvicorn app.api.main:app --reload --host 0.0.0.0 --port 8000
 Also try:
 http://127.0.0.1:8000/docs → FastAPI’s Swagger UI (auto-generated API doc)
 
+HOW TO TEST ANYTHING WITHOUT PAIN :
+https://upgraded-memory-jjr5w6wrq44q359px-8000.app.github.dev/docs
+
+Test the endpoint:
+Find the /enroll endpoint in the Swagger UI
+Click "Try it out"
+Enter a username and upload an image
+Click "Execute"
+
 http://127.0.0.1:8000/enroll/... → To test your enroll endpoints
 
 http://127.0.0.1:8000/verify/... → For verify routes
 
 http://127.0.0.1:8000/admin/... → For admin routes
+

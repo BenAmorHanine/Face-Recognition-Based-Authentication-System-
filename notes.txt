@@ -142,5 +142,14 @@ detectfaces    vs cropface
 
 
 
-Middlewares Please and shouf akal main file kifeh testaamlou 
-later eseel kifeh tu testes: coté ai , postman, fastapi and code based.ALSO THE REQUIREMENTS 
+Middlewares 
+
+
+need to be verified: 
+/api/v1/enroll/batch
+verify user 
+reactivate ( aawd testiha fl fast tw yatlaald erreur)
+list_users
+userstatus
+les 2 fcts de rate
+alesh en double les routes de verify et enroll

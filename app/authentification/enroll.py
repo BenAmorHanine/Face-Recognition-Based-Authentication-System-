@@ -69,18 +69,18 @@ class Enrollment:
             return False
 
     def batch_enroll(self, user_data: dict) -> dict:
-        """Enroll multiple users with progress tracking.
-        
-        Args:
-            user_data: {username: image_path} dictionary
+            """Enroll multiple users with progress tracking.
             
-        Returns:
-            dict: {"success": [usernames], "failed": {username: error}}
-        """
-        results = {"success": [], "failed": {}}
-        for username, image_path in user_data.items():
-            if self.enroll_user(username, image_path):
-                results["success"].append(username)
-            else:
-                results["failed"][username] = "Enrollment failed"
-        return results
+            Args:
+                user_data: {username: image_path} dictionary
+                
+            Returns:
+                dict: {"success": [usernames], "failed": {username: error}}
+            """
+            results = {"success": [], "failed": {}}
+            for username, image_path in user_data.items():
+                if self.enroll_user(username, image_path):
+                    results["success"].append(username)
+                else:
+                    results["failed"][username] = "Enrollment failed"
+            return results
