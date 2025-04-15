@@ -21,7 +21,7 @@ class FaceDatabase:
         self.conn.executescript("""
             CREATE TABLE IF NOT EXISTS users (
                 id INTEGER PRIMARY KEY,
-                username TEXT UNIQUE NOT NULL,  # Changed from 'name' for consistency
+                username TEXT UNIQUE NOT NULL, 
                 embedding BLOB NOT NULL,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 last_login TIMESTAMP,

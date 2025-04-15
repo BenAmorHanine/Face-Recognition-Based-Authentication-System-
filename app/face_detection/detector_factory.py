@@ -1,5 +1,6 @@
 from .mtcnn_detector import MTCNNDetector
 from .haar_detector import HaarDetector
+from .base_detector import BaseFaceDetector  # Import base class
 
 class DetectorFactory:
     """Factory to create face detectors based on config."""

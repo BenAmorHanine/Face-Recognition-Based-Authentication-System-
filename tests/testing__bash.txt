@@ -1,0 +1,18 @@
+enroll:
+curl -v -X POST http://localhost:8000/enroll \
+  -F "username=ahouda" \
+  -F "image=@dataset/raw/test/ahd3.jpg"
+
+
+
+Restart your FastAPI server:
+uvicorn app.api.main:app --reload --host 0.0.0.0 --port 8000
+
+Also try:
+http://127.0.0.1:8000/docs → FastAPI’s Swagger UI (auto-generated API doc)
+
+http://127.0.0.1:8000/enroll/... → To test your enroll endpoints
+
+http://127.0.0.1:8000/verify/... → For verify routes
+
+http://127.0.0.1:8000/admin/... → For admin routes
