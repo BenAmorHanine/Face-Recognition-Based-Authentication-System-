@@ -15,6 +15,7 @@ class FaceDatabase:
         self.conn = sqlite3.connect(db_path, check_same_thread=False)
         self.conn.row_factory = sqlite3.Row  # Enable column access by name
         self._create_tables()
+        self.EMBEDDING_DIM = 128
 
     def _create_tables(self) -> None:
         """Initialize database schema with web-friendly additions."""
@@ -48,14 +49,18 @@ class FaceDatabase:
             Returns:
                 bool: True if successful, False if user exists
             """
+            if len(embedding) != self.EMBEDDING_DIM:
+                raise ValueError(f"Invalid embedding size. Expected {self.expected_dim}-dim, got {len(embedding)}")
             try:
                 self.conn.execute(
                     "INSERT INTO users (username, embedding) VALUES (?, ?)",
                     (username, np.array(embedding).tobytes())  # Fixed: Added missing parenthesis
                 )
                 self.conn.commit()
+                print(f"✅ Saved {username} with {len(embedding)}-dim embedding")
                 return True
             except sqlite3.IntegrityError:
+                print(f"❌ User {username} already exists")
                 return False
     
     def get_user(self, username: str) -> Optional[dict]:

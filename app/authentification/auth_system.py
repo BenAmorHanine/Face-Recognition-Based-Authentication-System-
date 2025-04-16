@@ -18,12 +18,13 @@ class AuthSystem:
         self.verifier = Verifier()    # Uses Haar by config
         self.attempts = 0
         self.session_start= datetime.now()
+        self.MAX_ATTEMPTS = 40
 
     def enroll(self, name: str, image_path: str) -> bool:
         return self.enroller.enroll_user(name, image_path)
 
     def verify(self, image_path: str) -> str:
-        if self.attempts > MAX_ATTEMPTS:
+        if self.attempts > self.MAX_ATTEMPTS:
             raise  HTTPError("429 Too Many Requests")
         self.attempts += 1
         return self.verifier.verify_user(image_path)

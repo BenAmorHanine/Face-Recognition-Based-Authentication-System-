@@ -23,8 +23,26 @@ class LivenessDetector:
         ear = (abs(left_eye[1] - right_eye[1]) / 
                abs(left_eye[0] - right_eye[0]))
         
-        return ear < 0.2  # Threshold for "blinking"
+        return ear < 0.4  # Threshold for "blinking"
     
+    
+    def is_real_video(self, video_path: str) -> bool:
+        """Requires a short video (2-3 seconds)"""
+        cap = cv2.VideoCapture(video_path)
+        eye_states = []
+        
+        while cap.isOpened():
+            ret, frame = cap.read()
+            if not ret: break
+            
+            # Detect eye state per frame (open/closed)
+            eyes_closed = self._check_eyes_closed(frame)
+            eye_states.append(eyes_closed)
+        
+        # Check for at least one open→closed→open transition
+        return self._detect_blink_pattern(eye_states)
+
+
     """"
 #THIS VERSION IS BETTTER FOR REALTIME-> live webcam
 # the frame is given as fram(image array), consider that.

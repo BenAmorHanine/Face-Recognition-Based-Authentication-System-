@@ -17,7 +17,7 @@ or POST /verify?use_memory=false → forces file-based verification."""
 @router.post("/verify")
 async def verify_user(
     image: UploadFile = File(...), 
-    use_memory: bool = True  # <- Optional flag
+    use_memory: bool = True  # <- Optional  
 ):
     """Direct implementation of your verify methods"""
     try:
@@ -32,8 +32,10 @@ async def verify_user(
             os.unlink(temp_path)
 
         if result is None:
+            print("Verification failed: No match found")
             return {"user": None, "confidence": 0.0}
         elif isinstance(result, str):
+            print(f"Verification failed: {result}")
             return {"user": None, "status": result.lower()}
         else:
             username, confidence = result

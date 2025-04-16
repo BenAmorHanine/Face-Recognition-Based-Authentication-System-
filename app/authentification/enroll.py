@@ -50,12 +50,20 @@ class Enrollment:
 
             # 3. Generate embedding
             embedding = self.embedder.generate_embedding(processed_path)
+            print(f"New embedding shape: {len(embedding)}")  # should be 128
             if embedding is None:
                 raise ValueError("Embedding generation failed")
 
             # 4. Store in database
+
             if not self.db.save_user(username, embedding):
                 raise ValueError(f"Username {username} already exists")
+
+            print(f"Enrollment successful for {username}")
+            print(f"Raw image saved at: {raw_save_path}")
+            print(f"Processed image saved at: {processed_path}")
+            print(f"saved in db: {len(embedding)}")  # should be 128
+            print(f"Embedding saved in database for {username}")
 
             return True
 

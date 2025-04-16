@@ -1,7 +1,4 @@
-enroll:
-curl -v -X POST http://localhost:8000/enroll \
-  -F "username=ahouda" \
-  -F "image=@dataset/raw/test/ahd3.jpg"
+
 
 https://upgraded-memory-jjr5w6wrq44q359px-8000.app.github.dev/
 
@@ -29,3 +26,23 @@ http://127.0.0.1:8000/verify/... → For verify routes
 
 http://127.0.0.1:8000/admin/... → For admin routes
 
+
+
+enroll:
+curl -v -X POST http://localhost:8000/enroll \
+  -F "username=ahouda" \
+  -F "image=@dataset/raw/test/ahd3.jpg"
+
+
+verify:
+curl -X POST http://localhost:8000/verify \
+  -F "image=@dataset/raw/test/selena3.jpg.jpg"
+
+test bd:
+sqlite3 face_auth.db "SELECT username, LENGTH(embedding) FROM users;"
+
+sqlite3 face_auth.db "SELECT username, LENGTH(embedding)/4 FROM users;"
+
+
+
+python -m app.authentification.verify

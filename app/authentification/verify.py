@@ -1,4 +1,5 @@
 # Import required modules from project components
+import os
 from app.face_detection.detector_factory import DetectorFactory
 from app.feature_extraction.embeddings import EmbeddingGenerator
 from app.database.db_handler import FaceDatabase
@@ -36,55 +37,65 @@ class Verifier:
         self.liveness_checker = LivenessDetector()
 
     def verify_user(self, image_path: str) -> Optional[Tuple[str, float]]:
-        """Verify a user by comparing their face embedding to stored data.
-        
-        Args:
-            image_path: Path to the image containing the face to verify
-            
-        Returns:
-            str: Name of the matched user, or `None` if no match found.
-        """
+        """Verify a user by comparing facial embeddings."""
         try:
-            # Step 1: Check liveness
+            """# Step 0: Validate input file
+            if not os.path.exists(image_path):
+                print(f"❌ File not found: {image_path}")
+                return None"""
+
+            """# Step 1: Liveness check
             if not self.liveness_checker.is_real(image_path):
-                return ("SPOOF_ATTEMPT", 0.0)
-            try:
-                #if there are no faces in the image, we cut, we can put it in try catch for better optimization 
-                faces = self.detector.detect_faces(image_path)
-                if not faces:
-                    return None 
-                # Step 1: Detect and crop the face from the input image
-                cropped_path = self.detector.crop_face(image_path) #the faces 
-                if not cropped_path:
-                    return None
-                
-                # Step 2: Generate embedding from the cropped face
-                embedding = self.embedder.generate_embedding(cropped_path)
-                
-                # If no face detected in the image
-                if embedding is None:
-                    return None
-                
-                # Step 3: Compare against all stored embeddings
-                for name, stored_embedding in self.db.get_all_users():
-                    # Calculate similarity score (0-1 range)
-                    similarity = cosine_similarity([embedding], [stored_embedding])[0][0]
-                    
-                    # If similarity exceeds threshold, return the matched user
-                    if similarity > SIMILARITY_THRESHOLD:
-                        return name
-                        
-                # No matches found
+                return ("SPOOF_ATTEMPT", 0.0)"""
+
+            # Step 2: Face detection
+            faces = self.detector.detect_faces(image_path)
+            if not faces:
+                print("❌ No faces detected")
                 return None
-                
-            except Exception as e:
-                # Handle errors (e.g., file I/O, detector failures)
-                print(f"Verification failed: {e}")
+
+            # Step 3: Crop face
+            cropped_path = self.detector.crop_face(image_path)
+            if not cropped_path or not os.path.exists(cropped_path):
+                print("❌ Face cropping failed")
                 return None
-        
-        except Exception as e: #EXCEPTION OF LIVENESS 
+
+            # Step 4: Verify OpenCV can read the image
+            img = cv2.imread(cropped_path)
+            if img is None:
+                print(f"❌ OpenCV read failed: {cropped_path}")
+                return None
+
+            # Step 5: Generate embedding
+            embedding = self.embedder.generate_embedding(cropped_path)
+            if embedding is None or len(embedding) != 128:
+                print(f"❌ Invalid embedding (size: {len(embedding) if embedding else 'None'})")
+                return None
+
+            # Step 6: Compare with database
+            best_match = None
+            highest_score = 0.0
+
+            for name, stored_embedding in self.db.get_all_users():
+                if len(stored_embedding) != 128 or stored_embedding is None:
+                    print(f"⚠️ Skipping {name}: invalid stored embedding")
+                    continue
+
+                similarity = cosine_similarity([embedding], [stored_embedding])[0][0]
+                if similarity > SIMILARITY_THRESHOLD and similarity > highest_score:
+                    highest_score = similarity
+                    best_match = name
+
+            return (best_match, highest_score) if best_match else None
+
+        except Exception as e:
             print(f"Verification failed: {e}")
             return None
+
+
+
+
+
 
     def verify_from_memory(self, image_array: np.ndarray) -> Optional[Tuple[str, float]]:
         """
@@ -98,18 +109,9 @@ class Verifier:
         except Exception as e:
             print(f"Memory verification error: {e}")
             return None
-        
+   
 
-"""from ..recognition.face_recognizer import FaceRecognizer
 
-class Verifier:
-    def __init__(self, threshold=0.7):
-        self.db = FaceDatabase()
-        self.recognizer = FaceRecognizer(threshold)
 
-    def verify_user(self, embedding):
-        all_users = self.db.get_all_users()
-        for name, stored_embedding in all_users:
-            if self.recognizer.is_match(embedding, stored_embedding):
-                return name
-        return None"""
+verifier = Verifier()
+result = verifier.verify_user("dataset/raw/test/ahd1.jpg")
